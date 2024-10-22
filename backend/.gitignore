@@ -1,0 +1,43 @@
+# Python
+*.pyc
+__pycache__/
+db.sqlite3
+*.pyo
+*.pyd
+*.so
+
+# Django
+*.log
+static/
+media/
+*.pot
+*.mo
+
+# Environment variables
+.env
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+
+# Virtual environment
+venv/
+env/
+ENV/
+bin/
+lib/
+local/
+.venv/
+
+# MySQL
+*.pid
+*.seed
+
+# Postgres
+pgdata/
+.pgpass
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
