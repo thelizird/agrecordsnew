@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics, viewsets, status
-from .serializers import UserSerializer, NoteSerializer, FarmerSerializer, FieldSerializer, LabSerializer, CropSerializer, FieldHistorySerializer, SoilTestSerializer, ReportSerializer, AddEntrySerializer
+from .serializers import UserSerializer, NoteSerializer, FarmerSerializer, FieldSerializer, LabSerializer, CropSerializer, FieldHistorySerializer, SoilTestSerializer, ReportSerializer, AddEntrySerializer, YieldSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Note, Farmer, Field, Lab, Crop, FieldHistory, SoilTest, Report
+from .models import Note, Farmer, Field, Lab, Crop, FieldHistory, SoilTest, Report, Yield
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
@@ -194,3 +194,12 @@ class ReportView(APIView):
             serializer.update(report, serializer.validated_data)
             return Response({"message": "Entry added successfully", "report": ReportSerializer(report).data})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class YieldViewSet(viewsets.ModelViewSet):
+    serializer_class = YieldSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Filter yields based on the authenticated user's farmers
+        user_farmers = Farmer.objects.filter(user=self.request.user)
+        return Yield.objects.filter(farmer__in=user_farmers)

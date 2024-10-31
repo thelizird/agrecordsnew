@@ -120,21 +120,27 @@ function FilterComponent({ onGenerateGraph }) {
                 ))}
             </div>
 
-            <label className="block text-brown-800">Start Date</label>
-            <input
-                type="date"
-                className="w-full mb-2 p-2 border-2 border-brown-600 rounded-lg"
-                value={startDate || ""}
-                onChange={(e) => setStartDate(e.target.value)}
-            />
+            <div className="flex space-x-4 mb-2">
+                <div className="w-1/2">
+                    <label className="block text-brown-800">Start Date</label>
+                    <input
+                        type="date"
+                        className="w-full p-2 border-2 border-brown-600 rounded-lg"
+                        value={startDate || ""}
+                        onChange={(e) => setStartDate(e.target.value)}
+                    />
+                </div>
 
-            <label className="block text-brown-800">End Date</label>
-            <input
-                type="date"
-                className="w-full mb-2 p-2 border-2 border-brown-600 rounded-lg"
-                value={endDate || ""}
-                onChange={(e) => setEndDate(e.target.value)}
-            />
+                <div className="w-1/2">
+                    <label className="block text-brown-800">End Date</label>
+                    <input
+                        type="date"
+                        className="w-full p-2 border-2 border-brown-600 rounded-lg"
+                        value={endDate || ""}
+                        onChange={(e) => setEndDate(e.target.value)}
+                    />
+                </div>
+            </div>
 
             <label className="block text-brown-800">Graph Type</label>
             <select

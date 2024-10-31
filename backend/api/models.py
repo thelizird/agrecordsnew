@@ -137,3 +137,13 @@ class Report(models.Model):
     def add_entry(self, new_entry):
         self.text += f'\n{new_entry}'
         self.save()
+
+class Yield(models.Model):
+    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)  # Connect to Farmer model
+    field = models.ForeignKey(Field, on_delete=models.CASCADE)  # Connect to Field model
+    date = models.DateField()  # Date of yield entry
+    yield_number = models.DecimalField(max_digits=10, decimal_places=2)  # Yield amount
+
+    def __str__(self):
+        return f"Yield for {self.farmer} on {self.date}: {self.yield_number}"
+

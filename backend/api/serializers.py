@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Note, Farmer, Field, Lab, Crop, FieldHistory, SoilTest, Report
+from .models import Note, Farmer, Field, Lab, Crop, FieldHistory, SoilTest, Report, Yield
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -72,3 +72,8 @@ class AddEntrySerializer(serializers.Serializer):
         new_entry = validated_data.get('new_entry')
         instance.add_entry(new_entry)
         return instance
+
+class YieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Yield
+        fields = ['id', 'farmer', 'field', 'date', 'yield_number']

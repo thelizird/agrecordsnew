@@ -9,6 +9,8 @@ router.register(r'labs', LabViewSet, basename='lab')
 router.register(r'crops', CropViewSet, basename='crops')
 router.register(r'fieldhistory', FieldHistoryViewSet, basename='fieldhistory')
 router.register(r'soiltests', SoilTestViewSet, basename='soiltest')
+router.register(r'yields', YieldViewSet, basename='yield')
+
 
 urlpatterns = [
     path('user/me/', get_user_info, name='get_user_info'),

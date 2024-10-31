@@ -1,30 +1,22 @@
 import { useState } from "react";
 import Header from "../components/Header";
-import AddLabModal from "../components/AddLabModal";
-import AddCropModal from "../components/AddCropModal";
-import FieldHistoryModal from "../components/FieldHistoryModal";
 import AddSoilTestModal from "../components/AddSoilTestModal";
+import AddYieldModal from "../components/AddYieldModal"; // Import the new modal
 import FilterComponent from "../components/FilterComponent";
 import GraphComponent from "../components/GraphComponent";
 
 function Home() {
   const [currentPage, setCurrentPage] = useState("analytics");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAddLabModalOpen, setIsAddLabModalOpen] = useState(false);
-  const [isAddCropModalOpen, setIsAddCropModalOpen] = useState(false);
-  const [isAddFieldHistoryModalOpen, setIsAddFieldHistoryModalOpen] = useState(false);
   const [isAddSoilTestModalOpen, setIsAddSoilTestModalOpen] = useState(false);
-  const [graphFilters, setGraphFilters] = useState(null); // Graph filter data
+  const [isAddYieldModalOpen, setIsAddYieldModalOpen] = useState(false); // New state for Yield modal
+  const [graphFilters, setGraphFilters] = useState(null);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
-  const toggleAddLabModal = () => setIsAddLabModalOpen(!isAddLabModalOpen);
-  const toggleAddCropModal = () => setIsAddCropModalOpen(!isAddCropModalOpen);
-  const toggleAddFieldHistoryModal = () => setIsAddFieldHistoryModalOpen(!isAddFieldHistoryModalOpen);
   const toggleAddSoilTestModal = () => setIsAddSoilTestModalOpen(!isAddSoilTestModalOpen);
+  const toggleAddYieldModal = () => setIsAddYieldModalOpen(!isAddYieldModalOpen); // New toggle function
 
-  const handleGenerateGraph = (filters) => {
-    setGraphFilters(filters); // Pass filters to GraphComponent
-  };
+  const handleGenerateGraph = (filters) => setGraphFilters(filters);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -53,10 +45,8 @@ function Home() {
           <div className="bg-brown-800 p-6 rounded-lg shadow-lg w-[400px] z-50">
             <h2 className="text-xl font-bold mb-4 text-white">Add Data</h2>
             <div className="grid grid-cols-1 gap-4">
-              <button className="w-full font-bold bg-white text-green-500 py-2 px-4 rounded-lg hover:bg-cream-500" onClick={() => { toggleModal(); toggleAddLabModal(); }}>Add Lab</button>
-              <button className="w-full font-bold bg-white text-green-500 py-2 px-4 rounded-lg hover:bg-cream-500" onClick={() => { toggleModal(); toggleAddCropModal(); }}>Add Crop</button>
-              <button className="w-full font-bold bg-white text-green-500 py-2 px-4 rounded-lg hover:bg-cream-500" onClick={() => { toggleModal(); toggleAddFieldHistoryModal(); }}>Add Field History</button>
               <button className="w-full font-bold bg-white text-green-500 py-2 px-4 rounded-lg hover:bg-cream-500" onClick={() => { toggleModal(); toggleAddSoilTestModal(); }}>Add Soil Test</button>
+              <button className="w-full font-bold bg-white text-green-500 py-2 px-4 rounded-lg hover:bg-cream-500" onClick={() => { toggleModal(); toggleAddYieldModal(); }}>Add Yield</button> {/* New Add Yield button */}
             </div>
             <button onClick={toggleModal} className="mt-4 px-4 py-2 bg-gray-300 text-black rounded-lg w-full">Close</button>
           </div>
@@ -64,10 +54,8 @@ function Home() {
       )}
 
       {/* Add Data Modals */}
-      <AddLabModal isOpen={isAddLabModalOpen} onClose={toggleAddLabModal} />
-      <AddCropModal isOpen={isAddCropModalOpen} onClose={toggleAddCropModal} />
-      <FieldHistoryModal isOpen={isAddFieldHistoryModalOpen} onClose={toggleAddFieldHistoryModal} />
       <AddSoilTestModal isOpen={isAddSoilTestModalOpen} onClose={toggleAddSoilTestModal} />
+      <AddYieldModal isOpen={isAddYieldModalOpen} onClose={toggleAddYieldModal} /> {/* Add the new Yield modal */}
     </div>
   );
 }
