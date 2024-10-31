@@ -14,6 +14,7 @@ function FilterComponent({ onGenerateGraph }) {
     const [endDate, setEndDate] = useState(null);
     const [graphType, setGraphType] = useState("bar");
     const [selectedFields, setSelectedFields] = useState([]);
+    const [viewType, setViewType] = useState("soil");
 
     const soilTestFields = [
         "ph", "salts", "chlorides", "sodium", "cec", "excess_lime", "organic_matter",
@@ -51,17 +52,40 @@ function FilterComponent({ onGenerateGraph }) {
     const handleGenerateGraph = () => {
         onGenerateGraph({
             farmer: selectedFarmer,
-            filterType,
-            filterValues: selectedFilters, // Pass multiple selections
+            filterType: viewType === "yields" ? "field" : filterType,
+            filterValues: selectedFilters,
             startDate,
             endDate,
             graphType,
-            selectedFields
+            viewType,
+            selectedFields: viewType === "yields" ? ["yield_number"] : selectedFields
         });
     };
 
     return (
         <div className="p-4 bg-cream-400 rounded-lg">
+            <h2 className="text-lg font-bold text-brown-800 mb-4">Pick to Graph</h2>
+            <div className="flex mb-4">
+                <button
+                    className={`w-1/2 p-2 rounded-l-lg ${viewType === "soil" ? "bg-brown-800 text-white" : "bg-gray-300"}`}
+                    onClick={() => {
+                        setViewType("soil");
+                        setFilterType("field");
+                    }}
+                >
+                    Soil
+                </button>
+                <button
+                    className={`w-1/2 p-2 rounded-r-lg ${viewType === "yields" ? "bg-brown-800 text-white" : "bg-gray-300"}`}
+                    onClick={() => {
+                        setViewType("yields");
+                        setFilterType("field");
+                    }}
+                >
+                    Yields
+                </button>
+            </div>
+
             <h2 className="text-lg font-bold text-brown-800 mb-4">Filter Options</h2>
 
             <label className="block text-brown-800">Select Farmer</label>
@@ -86,12 +110,14 @@ function FilterComponent({ onGenerateGraph }) {
                 >
                     Field
                 </button>
-                <button
-                    className={`w-1/2 p-2 rounded-r-lg ${filterType === "crop" ? "bg-brown-800 text-white" : "bg-gray-300"}`}
-                    onClick={() => setFilterType("crop")}
-                >
-                    Crop
-                </button>
+                {viewType === "soil" && (
+                    <button
+                        className={`w-1/2 p-2 rounded-r-lg ${filterType === "crop" ? "bg-brown-800 text-white" : "bg-gray-300"}`}
+                        onClick={() => setFilterType("crop")}
+                    >
+                        Crop
+                    </button>
+                )}
             </div>
 
             <label className="block text-brown-800">Select {filterType === "field" ? "Fields" : "Crops"}</label>
@@ -152,29 +178,33 @@ function FilterComponent({ onGenerateGraph }) {
                 <option value="line">Line</option>
             </select>
 
-            <label className="block text-brown-800">Select Fields to Graph</label>
-            <div className="w-full mb-4 p-2 border-2 border-brown-600 rounded-lg max-h-[150px] overflow-y-auto">
-                {soilTestFields.map((field, index) => (
-                    <div key={index} className="flex items-center mb-2">
-                        <input
-                            type="checkbox"
-                            id={`field-${index}`}
-                            value={field}
-                            checked={selectedFields.includes(field)}
-                            onChange={(e) => {
-                                const isChecked = e.target.checked;
-                                setSelectedFields((prevSelected) =>
-                                    isChecked
-                                        ? [...prevSelected, field]
-                                        : prevSelected.filter((f) => f !== field)
-                                );
-                            }}
-                            className="mr-2"
-                        />
-                        <label htmlFor={`field-${index}`} className="text-brown-800">{field}</label>
+            {viewType === "soil" && (
+                <>
+                    <label className="block text-brown-800">Select Values to Graph</label>
+                    <div className="w-full mb-4 p-2 border-2 border-brown-600 rounded-lg max-h-[150px] overflow-y-auto">
+                        {soilTestFields.map((field, index) => (
+                            <div key={index} className="flex items-center mb-2">
+                                <input
+                                    type="checkbox"
+                                    id={`field-${index}`}
+                                    value={field}
+                                    checked={selectedFields.includes(field)}
+                                    onChange={(e) => {
+                                        const isChecked = e.target.checked;
+                                        setSelectedFields((prevSelected) =>
+                                            isChecked
+                                                ? [...prevSelected, field]
+                                                : prevSelected.filter((f) => f !== field)
+                                        );
+                                    }}
+                                    className="mr-2"
+                                />
+                                <label htmlFor={`field-${index}`} className="text-brown-800">{field}</label>
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
+                </>
+            )}
 
             <button
                 onClick={handleGenerateGraph}

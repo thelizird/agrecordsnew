@@ -82,16 +82,15 @@ function GraphComponent({ filters }) {
         if (filters) {
             const fetchGraphData = async (filterValue) => {
                 const queryParams = {
-                    startDate: filters.startDate,
-                    endDate: filters.endDate,
+                    farmer: filters.farmer,
+                    field: filterValue,
+                    date_after: filters.startDate,
+                    date_before: filters.endDate,
                 };
-                if (filters.filterType === 'field') {
-                    queryParams.field = filterValue;
-                } else if (filters.filterType === 'crop') {
-                    queryParams.crop = filterValue;
-                }
 
-                const res = await api.get("/api/soiltests/", { params: queryParams });
+                // Choose endpoint based on viewType
+                const endpoint = filters.viewType === "yields" ? "/api/yields/" : "/api/soiltests/";
+                const res = await api.get(endpoint, { params: queryParams });
                 return res.data;
             };
 
@@ -100,26 +99,44 @@ function GraphComponent({ filters }) {
 
                 const allGraphData = graphDataResults.map((data, index) => {
                     const filterValue = filters.filterValues[index];
-                    const datasets = filters.selectedFields.map((field) => {
-                        const color = `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
-                            Math.random() * 255
-                        )}, ${Math.floor(Math.random() * 255)}, 0.6)`;
+                    
+                    // Handle different data structure for yields vs soil tests
+                    if (filters.viewType === "yields") {
+                        return {
+                            labels: data.map((item) => item.date),
+                            datasets: [{
+                                label: 'Yield',
+                                data: data.map((item) => item.yield_number),
+                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                fill: false,
+                                tension: 0.1,
+                            }],
+                            filterValue,
+                        };
+                    } else {
+                        // Existing soil test data handling
+                        const datasets = filters.selectedFields.map((field) => {
+                            const color = `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+                                Math.random() * 255
+                            )}, ${Math.floor(Math.random() * 255)}, 0.6)`;
+
+                            return {
+                                label: field,
+                                data: data.map((test) => test[field]),
+                                backgroundColor: color,
+                                borderColor: color,
+                                fill: false,
+                                tension: 0.1,
+                            };
+                        });
 
                         return {
-                            label: field,
-                            data: data.map((test) => test[field]),
-                            backgroundColor: color,
-                            borderColor: color,
-                            fill: false,
-                            tension: 0.1,
+                            labels: data.map((test) => test.test_date),
+                            datasets,
+                            filterValue,
                         };
-                    });
-
-                    return {
-                        labels: data.map((test) => test.test_date),
-                        datasets,
-                        filterValue,
-                    };
+                    }
                 });
 
                 setGraphDataList(allGraphData);

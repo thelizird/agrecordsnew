@@ -17,6 +17,12 @@ function TestingData() {
         response = await api.get("/api/crops/"); // Fetch Crops data
       } else if (table === "fieldhistory") {  // Handle FieldHistory
         response = await api.get("/api/fieldhistory/");
+      } else if (table === "yields") {  // Add yields case
+        response = await api.get("/api/yields/");
+      } else if (table === "farmers") {  // Add farmers case
+        response = await api.get("/api/farmers/");
+      } else if (table === "fields") {   // Add fields case
+        response = await api.get("/api/fields/");
       }
       setData(response.data);
     } catch (error) {
@@ -44,9 +50,12 @@ function TestingData() {
           value={selectedTable}
           onChange={(e) => setSelectedTable(e.target.value)}
         >
+          <option value="farmers">Farmers</option>
+          <option value="fields">Fields</option>
           <option value="labs">Labs</option>
           <option value="crops">Crops</option>
           <option value="fieldhistory">Field History</option>
+          <option value="yields">Yields</option>
         </select>
       </div>
 
@@ -58,6 +67,29 @@ function TestingData() {
           <table className="min-w-full bg-cream-500 text-brown-800 border border-brown-800">
             <thead>
               <tr>
+                {/* Add farmers headers */}
+                {selectedTable === "farmers" && (
+                  <>
+                    <th className="px-4 py-2 border-b border-brown-600">ID</th>
+                    <th className="px-4 py-2 border-b border-brown-600">First Name</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Last Name</th>
+                    <th className="px-4 py-2 border-b border-brown-600">User</th>
+                  </>
+                )}
+                {/* Add fields headers */}
+                {selectedTable === "fields" && (
+                  <>
+                    <th className="px-4 py-2 border-b border-brown-600">Field ID</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Field Name</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Farmer</th>
+                    <th className="px-4 py-2 border-b border-brown-600">State</th>
+                    <th className="px-4 py-2 border-b border-brown-600">City</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Address</th>
+                    <th className="px-4 py-2 border-b border-brown-600">ZIP</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Latitude</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Longitude</th>
+                  </>
+                )}
                 {/* Adjust table headers based on selected table */}
                 {selectedTable === "labs" && (
                   <>
@@ -83,12 +115,51 @@ function TestingData() {
                     <th className="px-4 py-2 border-b border-brown-600">Yield Amount</th>
                   </>
                 )}
+                {selectedTable === "yields" && (
+                  <>
+                    <th className="px-4 py-2 border-b border-brown-600">ID</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Farmer</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Field</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Date</th>
+                    <th className="px-4 py-2 border-b border-brown-600">Yield Number</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
               {/* Display data rows */}
               {data.map((item) => (
-                <tr key={selectedTable === "labs" ? item.lab_id : item.crop_id}>
+                <tr key={
+                  selectedTable === "labs" ? item.lab_id : 
+                  selectedTable === "crops" ? item.crop_id :
+                  selectedTable === "yields" ? item.id :
+                  selectedTable === "fields" ? item.field_id :
+                  selectedTable === "farmers" ? item.id :
+                  item.field_hist_id
+                }>
+                  {/* Add farmers data rows */}
+                  {selectedTable === "farmers" && (
+                    <>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.id}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.farmer_fname}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.farmer_lname}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.user}</td>
+                    </>
+                  )}
+                  {/* Add fields data rows */}
+                  {selectedTable === "fields" && (
+                    <>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.field_id}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.field_name}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.farmer}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.state}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.city}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.address}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.zip}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.latitude}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.longitude}</td>
+                    </>
+                  )}
                   {selectedTable === "labs" && (
                     <>
                       <td className="px-4 py-2 border-b border-brown-600">{item.lab_id}</td>
@@ -111,6 +182,15 @@ function TestingData() {
                       <td className="px-4 py-2 border-b border-brown-600">{item.plant_date}</td>
                       <td className="px-4 py-2 border-b border-brown-600">{item.harvest_date}</td>
                       <td className="px-4 py-2 border-b border-brown-600">{item.yield_amount}</td>
+                    </>
+                  )}
+                  {selectedTable === "yields" && (
+                    <>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.id}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.farmer}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.field}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.date}</td>
+                      <td className="px-4 py-2 border-b border-brown-600">{item.yield_number}</td>
                     </>
                   )}
                 </tr>
