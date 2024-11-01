@@ -83,29 +83,57 @@ function GraphComponent({ filters }) {
             const fetchGraphData = async (filterValue) => {
                 const queryParams = {
                     farmer: filters.farmer,
-                    [filters.filterType]: filterValue, // This will be 'field' for yields
+                    field: filterValue,
                     ...(filters.startDate && { date_after: filters.startDate }),
                     ...(filters.endDate && { date_before: filters.endDate }),
                 };
 
-                // Choose endpoint based on viewType
-                const endpoint = filters.viewType === "yields" ? "/api/yields/" : "/api/soiltests/";
-                const res = await api.get(endpoint, { params: queryParams });
-                return res.data;
+                if (filters.viewType === "yields") {
+                    console.log("Fetching yields with params:", queryParams);
+                    const res = await api.get("/api/yields/", { params: queryParams });
+                    
+                    // Add strict filtering on the frontend as well
+                    const validData = res.data.filter(item => {
+                        const date = new Date(item.date);
+                        return (
+                            !isNaN(date) && 
+                            item.yield_number != null &&
+                            item.farmer.toString() === filters.farmer.toString() &&
+                            item.field.toString() === filterValue.toString() &&
+                            (!filters.startDate || date >= new Date(filters.startDate)) &&
+                            (!filters.endDate || date <= new Date(filters.endDate))
+                        );
+                    });
+                    
+                    console.log("Strictly filtered yield data:", validData);
+                    
+                    return {
+                        data: validData,
+                        filterValue,
+                    };
+                } else {
+                    // Fetch only soil test data
+                    const res = await api.get("/api/soiltests/", { params: queryParams });
+                    return {
+                        data: res.data,
+                        filterValue,
+                    };
+                }
             };
 
             const fetchAllData = async () => {
                 const graphDataResults = await Promise.all(filters.filterValues.map(fetchGraphData));
 
-                const allGraphData = graphDataResults.map((data, index) => {
-                    const filterValue = filters.filterValues[index];
+                const allGraphData = graphDataResults.map((result) => {
+                    const { data, filterValue } = result;
                     
                     if (filters.viewType === "yields") {
+                        // Create a single dataset for yields
                         return {
-                            labels: data.map((item) => new Date(item.date).toLocaleDateString()),
+                            labels: data.map(item => new Date(item.date).toLocaleDateString()),
                             datasets: [{
-                                label: `Yield (${filterNames[filterValue] || 'Loading...'})`,
-                                data: data.map((item) => parseFloat(item.yield_number)),
+                                label: `Yield for ${filterNames[filterValue] || 'Loading...'}`,
+                                data: data.map(item => parseFloat(item.yield_number)),
                                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
                                 borderColor: 'rgba(75, 192, 192, 1)',
                                 fill: false,
@@ -114,7 +142,7 @@ function GraphComponent({ filters }) {
                             filterValue,
                         };
                     } else {
-                        // Existing soil test data handling
+                        // Handle soil test data with multiple datasets
                         const datasets = filters.selectedFields.map((field) => {
                             const color = `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
                                 Math.random() * 255
@@ -143,29 +171,19 @@ function GraphComponent({ filters }) {
 
             fetchAllData();
 
-            api
-                .get(`/api/farmers/${filters.farmer}/`)
+            // Fetch farmer name
+            api.get(`/api/farmers/${filters.farmer}/`)
                 .then((res) => setFarmerName(`${res.data.farmer_fname} ${res.data.farmer_lname}`))
                 .catch((error) => console.error("Failed to fetch farmer name:", error));
 
+            // Fetch field names
             filters.filterValues.forEach((filterValue) => {
-                if (filters.filterType === "field") {
-                    api
-                        .get(`/api/fields/${filterValue}/`)
-                        .then((res) => setFilterNames((prevNames) => ({
-                            ...prevNames,
-                            [filterValue]: res.data.field_name,
-                        })))
-                        .catch((error) => console.error("Failed to fetch field name:", error));
-                } else if (filters.filterType === "crop") {
-                    api
-                        .get(`/api/crops/${filterValue}/`)
-                        .then((res) => setFilterNames((prevNames) => ({
-                            ...prevNames,
-                            [filterValue]: res.data.crop_name,
-                        })))
-                        .catch((error) => console.error("Failed to fetch crop name:", error));
-                }
+                api.get(`/api/fields/${filterValue}/`)
+                    .then((res) => setFilterNames((prevNames) => ({
+                        ...prevNames,
+                        [filterValue]: res.data.field_name,
+                    })))
+                    .catch((error) => console.error("Failed to fetch field name:", error));
             });
         }
     }, [filters]);
@@ -176,15 +194,15 @@ function GraphComponent({ filters }) {
 
     return (
         <div className="relative">
-            {/* Graph container with single scrollbar */}
             <div id="graph-container" className="p-4 bg-white rounded-lg shadow-lg mt-6 max-h-[600px] overflow-y-auto">
-                {/* Overlay green box inside the graph container */}
                 <div className="absolute top-4 right-4 bg-green-500 text-white p-3 rounded cursor-pointer z-10" onClick={downloadPDF}>
                     Save Graphs
                 </div>
 
                 {graphDataList.map((graphData, index) => {
-                    const titleText = `Data for ${farmerName} on ${filters.filterType === "field" ? "Field" : "Crop"} ${filterNames[graphData.filterValue] || "Loading..."}`;
+                    const titleText = filters.viewType === "yields" 
+                        ? `Yield Data for ${farmerName} - ${filterNames[graphData.filterValue] || "Loading..."}`
+                        : `Soil Test Data for ${farmerName} - ${filterNames[graphData.filterValue] || "Loading..."}`;
 
                     return (
                         <div key={index} className="mb-6">
@@ -196,22 +214,20 @@ function GraphComponent({ filters }) {
                                             title: {
                                                 display: true,
                                                 text: titleText,
-                                                font: {
-                                                    size: 18,
-                                                },
+                                                font: { size: 18 },
                                             },
                                         },
                                         scales: {
                                             x: {
                                                 title: {
                                                     display: true,
-                                                    text: "Test Date",
+                                                    text: filters.viewType === "yields" ? "Date" : "Test Date",
                                                 },
                                             },
                                             y: {
                                                 title: {
                                                     display: true,
-                                                    text: "Values",
+                                                    text: filters.viewType === "yields" ? "Yield Amount" : "Values",
                                                 },
                                             },
                                         },
@@ -225,22 +241,20 @@ function GraphComponent({ filters }) {
                                             title: {
                                                 display: true,
                                                 text: titleText,
-                                                font: {
-                                                    size: 18,
-                                                },
+                                                font: { size: 18 },
                                             },
                                         },
                                         scales: {
                                             x: {
                                                 title: {
                                                     display: true,
-                                                    text: "Test Date",
+                                                    text: filters.viewType === "yields" ? "Date" : "Test Date",
                                                 },
                                             },
                                             y: {
                                                 title: {
                                                     display: true,
-                                                    text: "Values",
+                                                    text: filters.viewType === "yields" ? "Yield Amount" : "Values",
                                                 },
                                             },
                                         },

@@ -50,14 +50,19 @@ function FilterComponent({ onGenerateGraph }) {
     }, [selectedFarmer, filterType]);
 
     const handleGenerateGraph = () => {
+        if (!selectedFarmer || selectedFilters.length === 0) {
+            alert("Please select a farmer and at least one field");
+            return;
+        }
+
         onGenerateGraph({
             farmer: selectedFarmer,
-            filterType: "field",
+            filterType: "field", // Always use field since both models connect to fields
             filterValues: selectedFilters,
             startDate,
             endDate,
             graphType,
-            viewType,
+            viewType, // This will be either "soil" or "yields"
             selectedFields: viewType === "yields" ? ["yield_number"] : selectedFields
         });
     };

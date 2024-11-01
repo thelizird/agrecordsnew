@@ -200,6 +200,35 @@ class YieldViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Filter yields based on the authenticated user's farmers
-        user_farmers = Farmer.objects.filter(user=self.request.user)
-        return Yield.objects.filter(farmer__in=user_farmers)
+        # Get the logged-in user
+        user = self.request.user
+        
+        # Get the farmers that belong to the user
+        user_farmers = Farmer.objects.filter(user=user)
+        
+        # Start with base queryset filtered by user's farmers
+        queryset = Yield.objects.filter(farmer__in=user_farmers)
+        
+        # Get filter parameters
+        farmer = self.request.query_params.get('farmer', None)
+        field = self.request.query_params.get('field', None)
+        date_after = self.request.query_params.get('date_after', None)
+        date_before = self.request.query_params.get('date_before', None)
+        
+        # Apply filters if they exist
+        if farmer:
+            queryset = queryset.filter(farmer_id=farmer)
+        
+        if field:
+            queryset = queryset.filter(field_id=field)
+            
+        if date_after:
+            queryset = queryset.filter(date__gte=date_after)
+            
+        if date_before:
+            queryset = queryset.filter(date__lte=date_before)
+        
+        print("Yield Query Params:", self.request.query_params)
+        print("Filtered Yield Data:", queryset.values())
+        
+        return queryset
