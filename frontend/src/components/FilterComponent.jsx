@@ -52,7 +52,7 @@ function FilterComponent({ onGenerateGraph }) {
     const handleGenerateGraph = () => {
         onGenerateGraph({
             farmer: selectedFarmer,
-            filterType: viewType === "yields" ? "field" : filterType,
+            filterType: "field",
             filterValues: selectedFilters,
             startDate,
             endDate,

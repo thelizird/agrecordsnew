@@ -83,9 +83,9 @@ function GraphComponent({ filters }) {
             const fetchGraphData = async (filterValue) => {
                 const queryParams = {
                     farmer: filters.farmer,
-                    field: filterValue,
-                    date_after: filters.startDate,
-                    date_before: filters.endDate,
+                    [filters.filterType]: filterValue, // This will be 'field' for yields
+                    ...(filters.startDate && { date_after: filters.startDate }),
+                    ...(filters.endDate && { date_before: filters.endDate }),
                 };
 
                 // Choose endpoint based on viewType
@@ -100,13 +100,12 @@ function GraphComponent({ filters }) {
                 const allGraphData = graphDataResults.map((data, index) => {
                     const filterValue = filters.filterValues[index];
                     
-                    // Handle different data structure for yields vs soil tests
                     if (filters.viewType === "yields") {
                         return {
-                            labels: data.map((item) => item.date),
+                            labels: data.map((item) => new Date(item.date).toLocaleDateString()),
                             datasets: [{
-                                label: 'Yield',
-                                data: data.map((item) => item.yield_number),
+                                label: `Yield (${filterNames[filterValue] || 'Loading...'})`,
+                                data: data.map((item) => parseFloat(item.yield_number)),
                                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
                                 borderColor: 'rgba(75, 192, 192, 1)',
                                 fill: false,
