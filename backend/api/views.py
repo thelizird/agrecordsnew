@@ -8,7 +8,15 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from django.utils import timezone
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+import logging
 
+logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -232,3 +240,59 @@ class YieldViewSet(viewsets.ModelViewSet):
         print("Filtered Yield Data:", queryset.values())
         
         return queryset
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'] = serializers.CharField(required=True)  # Keep username field
+        self.fields['password'] = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        logger.info(f"Received attrs: {attrs}")
+        
+        # Get the username/email from the request
+        username = attrs.get('username')
+        
+        try:
+            data = super().validate(attrs)
+            logger.info("Authentication successful")
+            return data
+        except Exception as e:
+            logger.error(f"Authentication failed: {str(e)}")
+            raise serializers.ValidationError({
+                'detail': 'Invalid credentials.'
+            })
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        logger.info(f"Received login request with data: {request.data}")
+        
+        # Get the email from the request
+        email = request.data.get('email')
+        password = request.data.get('password')
+        
+        if not email or not password:
+            return Response(
+                {'detail': 'Both email and password are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Modify the request data to use username instead of email
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        try:
+            user = User.objects.get(email=email)
+            # Replace email with username in the request data
+            modified_data = request.data.copy()
+            modified_data['username'] = user.username
+            request._full_data = modified_data
+        except User.DoesNotExist:
+            return Response(
+                {'detail': 'No user found with this email.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return super().post(request, *args, **kwargs)

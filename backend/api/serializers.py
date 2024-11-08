@@ -6,12 +6,18 @@ from .models import Note, Farmer, Field, Lab, Crop, FieldHistory, SoilTest, Repo
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "password"]
-        extra_kwargs = {"password": {"write_only": True}}
+        fields = ["id", "email", "password"]
+        extra_kwargs = {
+            "password": {"write_only": True},
+            "email": {"required": True}
+        }
 
     def create(self, validated_data):
-        print(validated_data)
-        user = User.objects.create_user(**validated_data)
+        user = User.objects.create_user(
+            username=validated_data['email'],  # Use email as username
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
         return user
 
 
