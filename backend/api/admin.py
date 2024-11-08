@@ -1,3 +1,2 @@
 from django.contrib import admin
-
-# Register your models here.
+# No need to register User model as it's already registered by Django auth
