@@ -1,19 +1,41 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 from django.utils import timezone
+from django.conf import settings
 
+
+class CustomUser(AbstractUser):
+    class Role(models.TextChoices):
+        COMPANY = 'COMPANY', 'Company'
+        AGRONOMIST = 'AGRONOMIST', 'Agronomist'
+        FARMER = 'FARMER', 'Farmer'
+    
+    role = models.CharField(
+        max_length=10,
+        choices=Role.choices,
+        default=Role.FARMER
+    )
+
+    def is_company(self):
+        return self.role == self.Role.COMPANY
+
+    def is_agronomist(self):
+        return self.role == self.Role.AGRONOMIST
+
+    def is_farmer(self):
+        return self.role == self.Role.FARMER
 
 class Note(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notes")
+    author = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name="notes")
 
     def __str__(self):
         return self.title
 
 class Farmer(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Allow multiple farmers for a single user
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
     farmer_fname = models.CharField(max_length=255)
     farmer_lname = models.CharField(max_length=255)
 
@@ -123,7 +145,7 @@ class Report(models.Model):
         # Add more categories as needed
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     text = models.TextField(default="", blank=True)
     year = models.PositiveIntegerField(default=timezone.now().year)

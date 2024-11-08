@@ -155,7 +155,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWS_CREDENTIALS = True
 
-AUTH_USER_MODEL = 'auth.User'
+AUTH_USER_MODEL = 'api.CustomUser'
 AUTHENTICATION_BACKENDS = [
     'api.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',

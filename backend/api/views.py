@@ -256,6 +256,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         try:
             data = super().validate(attrs)
             logger.info("Authentication successful")
+            # Add role to response
+            data['role'] = self.user.role
             return data
         except Exception as e:
             logger.error(f"Authentication failed: {str(e)}")

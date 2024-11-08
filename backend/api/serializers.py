@@ -1,22 +1,23 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Note, Farmer, Field, Lab, Crop, FieldHistory, SoilTest, Report, Yield
+from .models import Note, Farmer, Field, Lab, Crop, FieldHistory, SoilTest, Report, Yield, CustomUser
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ["id", "email", "password"]
+        model = CustomUser
+        fields = ["id", "email", "password", "role"]
         extra_kwargs = {
             "password": {"write_only": True},
             "email": {"required": True}
         }
 
     def create(self, validated_data):
-        user = User.objects.create_user(
+        user = CustomUser.objects.create_user(
             username=validated_data['email'],  # Use email as username
             email=validated_data['email'],
-            password=validated_data['password']
+            password=validated_data['password'],
+            role=validated_data.get('role', CustomUser.Role.FARMER)
         )
         return user
 
