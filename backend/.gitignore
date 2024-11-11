@@ -41,3 +41,5 @@ pgdata/
 
 # macOS
 .DS_Store
+
+staticfiles/

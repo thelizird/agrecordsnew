@@ -11,3 +11,4 @@ class ApiConfig(AppConfig):
         admin.site.site_header = "AgRecords Admin"
         admin.site.site_title = "AgRecords Admin Portal"
         admin.site.index_title = "Welcome to AgRecords Admin Portal"
+        import api.signals  # Import the signals
