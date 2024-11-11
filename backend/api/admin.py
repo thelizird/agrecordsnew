@@ -22,5 +22,11 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
 
+    def get_readonly_fields(self, request, obj=None):
+        # If this is an edit form (obj exists) and not an add form
+        if obj:
+            return ('role',) + super().get_readonly_fields(request, obj)
+        return super().get_readonly_fields(request, obj)
+
 # Register CustomUser with the CustomUserAdmin
 admin.site.register(CustomUser, CustomUserAdmin)

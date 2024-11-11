@@ -13,7 +13,7 @@ class CustomUser(AbstractUser):
     role = models.CharField(
         max_length=10,
         choices=Role.choices,
-        default=Role.FARMER
+        default=Role.COMPANY
     )
 
     def is_company(self):
@@ -24,15 +24,6 @@ class CustomUser(AbstractUser):
 
     def is_farmer(self):
         return self.role == self.Role.FARMER
-
-class Note(models.Model):
-    title = models.CharField(max_length=100)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name="notes")
-
-    def __str__(self):
-        return self.title
 
 class Farmer(models.Model):
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)

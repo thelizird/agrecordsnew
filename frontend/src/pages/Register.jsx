@@ -6,7 +6,7 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("FARMER");
+  const [role, setRole] = useState("COMPANY");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
