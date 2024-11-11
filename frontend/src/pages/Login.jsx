@@ -13,12 +13,20 @@ export default function Login() {
     setLoading(true);
     e.preventDefault();
 
+    console.log('Attempting login with:', { email, password });
+
     try {
         // Step 1: Authenticate user and get JWT tokens
         const response = await api.post("/api/token/", {
             email: email,
-            password: password,
+            password: password
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
+        
+        console.log('Login response:', response.data);
 
         if (response.data.access) {
             // Step 2: Store JWT tokens in localStorage for future API calls
@@ -41,6 +49,11 @@ export default function Login() {
             navigate("/analytics");
         }
     } catch (error) {
+        console.error('Login error details:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
         // Handle any errors during login process
         console.error('Login error:', error.response?.data || error);
         const errorMessage = error.response?.data?.detail || 

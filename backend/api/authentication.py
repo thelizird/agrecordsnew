@@ -11,10 +11,12 @@ class EmailBackend(ModelBackend):
             # Check if we're using email or username
             if '@' in str(username):
                 user = User.objects.get(email=username)
+                logger.info(f"Found user by email: {user.email}")
             else:
                 user = User.objects.get(username=username)
+                logger.info(f"Found user by username: {user.username}")
                 
-            logger.info(f"Found user: {user.username}")
+            logger.info(f"Attempting password check for user: {user.email}")
             if user.check_password(password):
                 logger.info("Password check successful")
                 return user

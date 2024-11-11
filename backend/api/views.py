@@ -221,15 +221,11 @@ class YieldViewSet(viewsets.ModelViewSet):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['username'] = serializers.CharField(required=True)  # Keep username field
+        self.fields['username'] = serializers.CharField(required=True)
         self.fields['password'] = serializers.CharField(required=True, write_only=True)
 
     def validate(self, attrs):
-        logger.info(f"Received attrs: {attrs}")
-        
-        # Get the username/email from the request
-        username = attrs.get('username')
-        
+        logger.info(f"Validating with attrs: {attrs}")
         try:
             data = super().validate(attrs)
             logger.info("Authentication successful")
@@ -264,14 +260,19 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         
         try:
             user = User.objects.get(email=email)
-            # Replace email with username in the request data
-            modified_data = request.data.copy()
-            modified_data['username'] = user.username
-            request._full_data = modified_data
+            # Create a new QueryDict or dict instead of modifying the original
+            modified_data = {
+                'username': user.username,  # Use the username from the user object
+                'password': password
+            }
+            request.data.clear()  # Clear the original data
+            request.data.update(modified_data)  # Update with new data
+            
+            logger.info(f"Modified request data: {request.data}")
+            
+            return super().post(request, *args, **kwargs)
         except User.DoesNotExist:
             return Response(
                 {'detail': 'No user found with this email.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        return super().post(request, *args, **kwargs)

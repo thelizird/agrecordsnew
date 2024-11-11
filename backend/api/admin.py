@@ -14,12 +14,14 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = CustomUser
-        fields = ('email', 'role', 'company')
+        fields = ('username', 'email', 'role', 'company')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Ensure the queryset is evaluated here
         self.fields['company'].queryset = Company.objects.all()
+        # Make email required
+        self.fields['email'].required = True
 
     def clean(self):
         cleaned_data = super().clean()
@@ -37,20 +39,20 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     model = CustomUser
-    list_display = ('email', 'role', 'is_staff', 'is_active',)
+    list_display = ('username', 'email', 'role', 'is_staff', 'is_active',)
     list_filter = ('role', 'is_staff', 'is_active',)
     
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
+        (None, {'fields': ('username', 'email', 'password')}),
         ('Permissions', {'fields': ('is_staff', 'is_active', 'role')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'role', 'company', 'is_staff', 'is_active')}
+            'fields': ('username', 'email', 'password1', 'password2', 'role', 'company', 'is_staff', 'is_active')}
         ),
     )
-    search_fields = ('email',)
+    search_fields = ('email', 'username',)
     ordering = ('email',)
 
 class CompanyAdmin(admin.ModelAdmin):
