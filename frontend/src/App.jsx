@@ -4,12 +4,13 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Home from "./pages/Home"
 import NotFound from "./pages/NotFound"
+import Unauthorized from "./pages/Unauthorized"
 import ProtectedRoute from "./components/ProtectedRoute"
+import RoleBasedRoute from "./components/RoleBasedRoute"
 import Analytics from "./pages/Analytics"
 import Clients from "./pages/Clients"
 import TestingData from "./pages/TestingData"
 import Reports from "./pages/Reports"
-
 
 function Logout() {
   localStorage.clear()
@@ -25,22 +26,53 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
+        <Route path="/" element={<Home />} />
+        
+        {/* Available to all authenticated users */}
+        <Route 
+          path="/analytics" 
           element={
-              <Home />
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
           }
         />
-        <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>}/>
-        <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>}/>
 
-        <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>}/>
-        <Route path="/testingdata" element={<ProtectedRoute><TestingData /></ProtectedRoute>}/>
+        {/* Company only */}
+        <Route 
+          path="/reports" 
+          element={
+            <RoleBasedRoute allowedRoles={['COMPANY']}>
+              <Reports />
+            </RoleBasedRoute>
+          }
+        />
+
+        {/* Agronomist and Company */}
+        <Route 
+          path="/clients" 
+          element={
+            <RoleBasedRoute allowedRoles={['AGRONOMIST', 'COMPANY']}>
+              <Clients />
+            </RoleBasedRoute>
+          }
+        />
+
+        {/* Agronomist and Company */}
+        <Route 
+          path="/testingdata" 
+          element={
+            <RoleBasedRoute allowedRoles={['AGRONOMIST', 'COMPANY']}>
+              <TestingData />
+            </RoleBasedRoute>
+          }
+        />
 
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<RegisterAndLogout />} />
-        <Route path="*" element={<NotFound />}></Route>
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )

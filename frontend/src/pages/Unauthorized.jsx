@@ -1,0 +1,45 @@
+import { useNavigate } from "react-router-dom";
+
+function Unauthorized() {
+    const navigate = useNavigate();
+
+    return (
+        <section className="bg-cream-500 min-h-screen flex items-center justify-center">
+            <div className="container px-6 py-12 mx-auto lg:flex lg:items-center lg:gap-12">
+                <div className="w-full lg:w-1/2">
+                    <p className="text-sm font-medium text-brown-800">403 error</p>
+                    <h1 className="mt-3 text-2xl font-semibold text-brown-800 md:text-3xl">Access Denied</h1>
+                    <p className="mt-4 text-brown-600">Sorry, you don't have permission to access this page. Please contact your administrator if you believe this is a mistake.</p>
+
+                    <div className="flex items-center mt-6 gap-x-3">
+                        <button 
+                            className="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-brown-800 bg-white border border-brown-600 rounded-lg gap-x-2 sm:w-auto hover:bg-brown-200"
+                            onClick={() => navigate(-1)}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
+                            </svg>
+                            <span>Go back</span>
+                        </button>
+
+                        <button 
+                            className="w-1/2 px-5 py-2 text-sm tracking-wide text-white bg-brown-800 rounded-lg sm:w-auto hover:bg-brown-600"
+                            onClick={() => navigate("/")}
+                        >
+                            Take me home
+                        </button>
+                    </div>
+                </div>
+
+                <div className="relative w-full mt-8 lg:w-1/2 lg:mt-0">
+                    <img className="w-full lg:h-[32rem] h-80 md:h-96 rounded-lg object-cover" 
+                        src="https://images.unsplash.com/photo-1455815822922-fbe1cd45f4d2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80" 
+                        alt="Unauthorized Access" 
+                    />
+                </div>
+            </div>
+        </section>
+    );
+}
+
+export default Unauthorized; 

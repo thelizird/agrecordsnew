@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api"; // Assuming you have an api module to make the POST request
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants"; // Constants for token storage
+import api from "../api";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 
 export default function Register() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("FARMER");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -14,12 +15,16 @@ export default function Register() {
     e.preventDefault();
 
     try {
-      const res = await api.post("/api/user/register/", { username, password });
-      localStorage.setItem(ACCESS_TOKEN, res.data.access);
-      localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-      navigate("/login"); // Redirect to login after registration
+      const res = await api.post("/api/user/register/", {
+        email: email,
+        password: password,
+        role: role
+      });
+
+      navigate("/login");
     } catch (error) {
-      alert("Registration failed. Please try again.");
+      console.error("Registration error:", error.response?.data || error);
+      alert(error.response?.data?.detail || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -41,17 +46,17 @@ export default function Register() {
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium leading-6 text-brown-800">
-              Username
+            <label htmlFor="email" className="block text-sm font-medium leading-6 text-brown-800">
+              Email
             </label>
             <div className="mt-2">
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="block w-full rounded-md border-0 py-1.5 text-brown-800 shadow-sm ring-1 ring-inset ring-brown-600 placeholder:text-brown-600 focus:ring-2 focus:ring-inset focus:ring-brown-800 sm:text-sm sm:leading-6"
               />
             </div>
@@ -75,9 +80,29 @@ export default function Register() {
           </div>
 
           <div>
+            <label htmlFor="role" className="block text-sm font-medium leading-6 text-brown-800">
+              Role
+            </label>
+            <div className="mt-2">
+              <select
+                id="role"
+                name="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="block w-full rounded-md border-0 py-1.5 text-brown-800 shadow-sm ring-1 ring-inset ring-brown-600 focus:ring-2 focus:ring-inset focus:ring-brown-800 sm:text-sm sm:leading-6"
+              >
+                <option value="FARMER">Farmer</option>
+                <option value="AGRONOMIST">Agronomist</option>
+                <option value="COMPANY">Company</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-brown-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-brown-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brown-800"
+              disabled={loading}
+              className="flex w-full justify-center rounded-md bg-brown-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-brown-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brown-800 disabled:opacity-50"
             >
               {loading ? "Registering..." : "Create Account"}
             </button>
@@ -92,6 +117,5 @@ export default function Register() {
         </p>
       </div>
     </div>
-
   );
 }

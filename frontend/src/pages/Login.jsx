@@ -4,7 +4,7 @@ import api from "../api";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 
 export default function Login() {
-  const [username, setUsername] = useState("");  // Change back to username
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -14,28 +14,40 @@ export default function Login() {
     e.preventDefault();
 
     try {
-        // First, authenticate and get tokens
-        const res = await api.post("/api/token/", { username, password });
-
-        // Store tokens in local storage
-        localStorage.setItem(ACCESS_TOKEN, res.data.access);
-        localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-
-        // Use the access token to fetch user information
-        const userInfoResponse = await api.get("/api/user/me/", {
-            headers: {
-                Authorization: `Bearer ${res.data.access}`,
-            },
+        // Step 1: Authenticate user and get JWT tokens
+        const response = await api.post("/api/token/", {
+            email: email,
+            password: password,
         });
 
-        // Store user info in local storage
-        localStorage.setItem('user', JSON.stringify(userInfoResponse.data));
+        if (response.data.access) {
+            // Step 2: Store JWT tokens in localStorage for future API calls
+            localStorage.setItem(ACCESS_TOKEN, response.data.access);
+            localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
+            // Store user role from the token response
+            localStorage.setItem('userRole', response.data.role);
 
-        // Redirect after successful login
-        navigate("/analytics");
+            // Step 3: Fetch additional user information using the new access token
+            const userInfoResponse = await api.get("/api/user/me/", {
+                headers: {
+                    Authorization: `Bearer ${response.data.access}`,
+                },
+            });
+
+            // Step 4: Store the complete user information
+            localStorage.setItem('user', JSON.stringify(userInfoResponse.data));
+
+            // Step 5: Redirect to main application page
+            navigate("/analytics");
+        }
     } catch (error) {
-        alert("Login failed. Please try again.");
+        // Handle any errors during login process
+        console.error('Login error:', error.response?.data || error);
+        const errorMessage = error.response?.data?.detail || 
+                          "Login failed. Please check your credentials.";
+        alert(errorMessage);
     } finally {
+        // Reset loading state regardless of success/failure
         setLoading(false);
     }
 };
@@ -56,15 +68,15 @@ export default function Login() {
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium leading-6 text-brown-800">Username</label>
+            <label htmlFor="email" className="block text-sm font-medium leading-6 text-brown-800">Email</label>
             <div className="mt-2">
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="block w-full rounded-md border-0 py-1.5 text-brown-800 shadow-sm ring-1 ring-inset ring-brown-600 placeholder:text-brown-600 focus:ring-2 focus:ring-inset focus:ring-brown-800 sm:text-sm sm:leading-6"
               />
             </div>
