@@ -11,10 +11,9 @@ router.register(r'fieldhistory', FieldHistoryViewSet, basename='fieldhistory')
 router.register(r'soiltests', SoilTestViewSet, basename='soiltest')
 router.register(r'yields', YieldViewSet, basename='yield')
 
-
 urlpatterns = [
+    path('farmers/create/', create_farmer_user, name='create_farmer'),
     path('user/me/', get_user_info, name='get_user_info'),
-    path('', include(router.urls)),
     path('reports/<str:category>/', ReportView.as_view(), name='report'),
-    path('farmers/create/', create_farmer_user, name='create-farmer-user'),
+    path('', include(router.urls)),
 ]

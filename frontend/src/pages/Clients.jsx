@@ -19,13 +19,27 @@ function Clients() {
     const fetchCompanyId = async () => {
       try {
         const response = await api.get("/api/user/me/");
-        setCompanyId(response.data.company);
+        console.log("User data response:", response.data); // Debug log
+        const companyId = response.data.company;
+        
+        if (!companyId) {
+          console.error("No company ID available for this user");
+          return;
+        }
+        
+        console.log("Setting company ID:", companyId); // Debug log
+        setCompanyId(companyId);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
       }
     };
     fetchCompanyId();
   }, []);
+
+  // Add this debug log
+  useEffect(() => {
+    console.log("Current companyId state:", companyId);
+  }, [companyId]);
 
   // Fetch clients (farmers) from the API
   const fetchClients = () => {

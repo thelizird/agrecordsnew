@@ -3,7 +3,19 @@ from django.contrib.auth.models import User
 from rest_framework import generics, viewsets, status
 from .serializers import UserSerializer, FarmerSerializer, FieldSerializer, LabSerializer, CropSerializer, FieldHistorySerializer, SoilTestSerializer, ReportSerializer, AddEntrySerializer, YieldSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Farmer, Field, Lab, Crop, FieldHistory, SoilTest, Report, Yield
+from .models import (
+    Farmer, 
+    Field, 
+    Lab, 
+    Crop, 
+    FieldHistory, 
+    SoilTest, 
+    Report, 
+    Yield,
+    Company, 
+    Agronomist, 
+    CustomUser
+)
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
@@ -24,11 +36,56 @@ User = get_user_model()
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
-    user = request.user
-    return Response({
-        'id': user.id,
-        'username': user.username,
-    })
+    try:
+        user = request.user
+        print("=== User Info Debug ===")
+        print("User requesting info:", user)
+        print("User ID:", user.id)
+        print("User role:", user.role)
+        
+        # Initialize company_id as None
+        company_id = None
+        
+        # Check user's role and get the appropriate company ID
+        if user.role == 'COMPANY':
+            try:
+                company = Company.objects.get(user=user)
+                print("Found company:", company)
+                print("Company ID:", company.id)
+                company_id = company.id
+            except Company.DoesNotExist:
+                print("No company found for user with ID:", user.id)
+                print("All companies:", Company.objects.all().values('id', 'user_id', 'company_name'))
+        elif user.role in ['AGRONOMIST', 'FARMER']:
+            try:
+                if user.role == 'AGRONOMIST':
+                    agronomist = Agronomist.objects.get(user=user)
+                    company_id = agronomist.company_id
+                else:
+                    farmer = Farmer.objects.get(user=user)
+                    company_id = farmer.company_id
+                print(f"Found {user.role} company ID:", company_id)
+            except (Agronomist.DoesNotExist, Farmer.DoesNotExist) as e:
+                print(f"No {user.role.lower()} profile found:", str(e))
+
+        print("Final company_id:", company_id)
+        print("=== End Debug ===")
+
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'role': user.role,
+            'company': company_id,
+            'email': user.email
+        })
+    except Exception as e:
+        print("Error in get_user_info:", str(e))
+        import traceback
+        print("Full traceback:", traceback.format_exc())
+        return Response(
+            {"error": str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 class FarmerViewSet(viewsets.ModelViewSet):
@@ -286,10 +343,35 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_farmer_user(request):
+    print("Creating farmer user")
+    print("Request data:", request.data)
+    
+    # Validate required fields
+    required_fields = ['username', 'email', 'password', 'company', 'first_name', 'last_name']
+    missing_fields = [field for field in required_fields if not request.data.get(field)]
+    
+    if missing_fields:
+        return Response(
+            {
+                "error": f"Missing required fields: {', '.join(missing_fields)}",
+                "received_data": request.data
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
     with transaction.atomic():
         try:
             # First create the user
-            user_serializer = UserSerializer(data=request.data)
+            user_data = {
+                'username': request.data.get('username'),
+                'email': request.data.get('email'),
+                'password': request.data.get('password'),
+                'role': 'FARMER',
+                'company': request.data.get('company')
+            }
+            print("User data:", user_data)
+            
+            user_serializer = UserSerializer(data=user_data)
             if user_serializer.is_valid():
                 user = user_serializer.save()
                 
@@ -300,6 +382,8 @@ def create_farmer_user(request):
                     'first_name': request.data.get('first_name'),
                     'last_name': request.data.get('last_name')
                 }
+                print("Farmer data:", farmer_data)
+                
                 farmer_serializer = FarmerSerializer(data=farmer_data)
                 if farmer_serializer.is_valid():
                     farmer_serializer.save()
@@ -308,9 +392,10 @@ def create_farmer_user(request):
                         'farmer': farmer_serializer.data
                     }, status=status.HTTP_201_CREATED)
                 else:
-                    # If farmer creation fails, roll back the transaction
+                    print("Farmer serializer errors:", farmer_serializer.errors)
                     raise serializers.ValidationError(farmer_serializer.errors)
+            print("User serializer errors:", user_serializer.errors)
             return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            # Any error will roll back both creations
+            print("Exception:", str(e))
             raise serializers.ValidationError(str(e))

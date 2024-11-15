@@ -39,7 +39,7 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     model = CustomUser
-    list_display = ('username', 'email', 'role', 'is_staff', 'is_active',)
+    list_display = ('id', 'username', 'email', 'role', 'is_staff', 'is_active',)
     list_filter = ('role', 'is_staff', 'is_active',)
     
     fieldsets = (
@@ -56,12 +56,14 @@ class CustomUserAdmin(UserAdmin):
     ordering = ('email',)
 
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ('company_name', 'user')
+    list_display = ('id', 'company_name', 'user')
     fields = ('user', 'company_name')
+    readonly_fields = ('id',)
 
 class AgronomistAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name', 'company', 'user')
-    fields = ('user', 'company', 'first_name', 'last_name')
+    list_display = ('id', 'first_name', 'last_name', 'company', 'user')
+    fields = ('id', 'user', 'company', 'first_name', 'last_name')
+    readonly_fields = ('id',)
     
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "company":
@@ -69,8 +71,9 @@ class AgronomistAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class FarmerAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name', 'company', 'user')
-    fields = ('user', 'company', 'first_name', 'last_name')
+    list_display = ('id', 'first_name', 'last_name', 'company', 'user')
+    fields = ('id', 'user', 'company', 'first_name', 'last_name')
+    readonly_fields = ('id',)
     
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "company":

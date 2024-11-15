@@ -2,55 +2,63 @@ import { useState } from "react";
 import api from "../api";
 
 function UserFormModal({ isOpen, onClose, onSuccess, companyId }) {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password1, setPassword1] = useState("");
-  const [password2, setPassword2] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  console.log("UserFormModal received companyId:", companyId);
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setLoading(true);
+    setError(null);
 
-    if (password1 !== password2) {
+    if (password !== confirmPassword) {
       setError("Passwords do not match");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!companyId) {
+      setError("No company ID available");
+      setLoading(false);
+      return;
+    }
+
+    const formData = {
+      username: username,
+      email: email,
+      password: password,
+      role: "FARMER",
+      company: companyId,
+      first_name: firstName,
+      last_name: lastName
+    };
+
+    console.log("Submitting form data:", formData);
+
     try {
-      const userResponse = await api.post("/api/user/register/", {
-        username,
-        email,
-        password: password1,
-        role: "FARMER",
-        company: companyId,
-        first_name: firstName,
-        last_name: lastName
-      });
+      const response = await api.post("/api/farmers/create/", formData);
 
-      await api.post("/api/farmers/", {
-        user: userResponse.data.id,
-        company: companyId,
-        first_name: firstName,
-        last_name: lastName
-      });
-
+      setLoading(false);
       onSuccess();
       onClose();
-      setUsername("");
-      setEmail("");
-      setPassword1("");
-      setPassword2("");
-      setFirstName("");
-      setLastName("");
+      
+      setFirstName('');
+      setLastName('');
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
     } catch (error) {
-      setError(error.response?.data?.detail || "Registration failed");
-    } finally {
       setLoading(false);
+      console.error("Registration error:", error.response?.data || error.message);
+      setError(error.response?.data?.detail || "Failed to create farmer");
     }
   };
 
@@ -106,8 +114,8 @@ function UserFormModal({ isOpen, onClose, onSuccess, companyId }) {
             <label className="block text-gray-700">Password</label>
             <input
               type="password"
-              value={password1}
-              onChange={(e) => setPassword1(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full mt-1 p-2 border rounded"
             />
@@ -116,8 +124,8 @@ function UserFormModal({ isOpen, onClose, onSuccess, companyId }) {
             <label className="block text-gray-700">Confirm Password</label>
             <input
               type="password"
-              value={password2}
-              onChange={(e) => setPassword2(e.target.value)}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               className="w-full mt-1 p-2 border rounded"
             />
@@ -145,4 +153,4 @@ function UserFormModal({ isOpen, onClose, onSuccess, companyId }) {
   );
 }
 
-export default UserFormModal; 
+export default UserFormModal;
