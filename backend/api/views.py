@@ -13,6 +13,9 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 import logging
+from django.db import transaction
+from .models import CustomUser, Farmer
+from .serializers import UserSerializer, FarmerSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -244,35 +247,70 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         logger.info(f"Received login request with data: {request.data}")
         
-        # Get the email from the request
-        email = request.data.get('email')
+        # Get the identifier and password from the request
+        identifier = request.data.get('identifier')
         password = request.data.get('password')
         
-        if not email or not password:
+        if not identifier or not password:
             return Response(
-                {'detail': 'Both email and password are required.'},
+                {'detail': 'Both identifier and password are required.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Modify the request data to use username instead of email
+        # Modify the request data to use username
         from django.contrib.auth import get_user_model
         User = get_user_model()
         
         try:
-            user = User.objects.get(email=email)
-            # Create a new QueryDict or dict instead of modifying the original
-            modified_data = {
-                'username': user.username,  # Use the username from the user object
-                'password': password
-            }
-            request.data.clear()  # Clear the original data
-            request.data.update(modified_data)  # Update with new data
+            # Try to find user by email first, then username
+            if '@' in identifier:
+                user = User.objects.get(email=identifier)
+            else:
+                user = User.objects.get(username=identifier)
+                
+            # Replace identifier with username in the request data
+            modified_data = request.data.copy()
+            modified_data['username'] = user.username
+            request.data.clear()
+            request.data.update(modified_data)
             
             logger.info(f"Modified request data: {request.data}")
             
             return super().post(request, *args, **kwargs)
         except User.DoesNotExist:
             return Response(
-                {'detail': 'No user found with this email.'},
+                {'detail': 'No user found with these credentials.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_farmer_user(request):
+    with transaction.atomic():
+        try:
+            # First create the user
+            user_serializer = UserSerializer(data=request.data)
+            if user_serializer.is_valid():
+                user = user_serializer.save()
+                
+                # Then create the farmer profile
+                farmer_data = {
+                    'user': user.id,
+                    'company': request.data.get('company'),
+                    'first_name': request.data.get('first_name'),
+                    'last_name': request.data.get('last_name')
+                }
+                farmer_serializer = FarmerSerializer(data=farmer_data)
+                if farmer_serializer.is_valid():
+                    farmer_serializer.save()
+                    return Response({
+                        'user': user_serializer.data,
+                        'farmer': farmer_serializer.data
+                    }, status=status.HTTP_201_CREATED)
+                else:
+                    # If farmer creation fails, roll back the transaction
+                    raise serializers.ValidationError(farmer_serializer.errors)
+            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # Any error will roll back both creations
+            raise serializers.ValidationError(str(e))

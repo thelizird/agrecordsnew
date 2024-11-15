@@ -16,5 +16,5 @@ urlpatterns = [
     path('user/me/', get_user_info, name='get_user_info'),
     path('', include(router.urls)),
     path('reports/<str:category>/', ReportView.as_view(), name='report'),
-
+    path('farmers/create/', create_farmer_user, name='create-farmer-user'),
 ]
