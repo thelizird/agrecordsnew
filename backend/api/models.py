@@ -65,6 +65,8 @@ class Field(models.Model):
     def __str__(self):
         return self.field_name
     
+
+
 class Lab(models.Model):
     lab_id = models.AutoField(primary_key=True)
     lab_name = models.CharField(max_length=255)  # lab_name is not unique
@@ -91,6 +93,8 @@ class FieldHistory(models.Model):
 
     def __str__(self):
         return f"Field History {self.field_hist_id}"
+
+
 
 class SoilTest(models.Model):
     soil_id = models.AutoField(primary_key=True)

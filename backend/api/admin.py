@@ -2,6 +2,8 @@ from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from .models import CustomUser, Company, Agronomist, Farmer
 
 class CustomUserCreationForm(UserCreationForm):
@@ -54,6 +56,30 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ('email', 'username',)
     ordering = ('email',)
+
+    def save_model(self, request, obj, form, change):
+        creating = not obj.pk  # Check if this is a new object
+        company = form.cleaned_data.get('company') if form is not None else None
+        
+        # First save the user
+        super().save_model(request, obj, form, change)
+        
+        if creating and company:  # Only handle company and profiles for new users
+            # Set company relationship
+            if hasattr(obj, 'company'):
+                obj.company = company
+                
+            # Create appropriate profile based on role
+            if obj.role == CustomUser.Role.AGRONOMIST:
+                Agronomist.objects.create(
+                    user=obj,
+                    company=company
+                )
+            elif obj.role == CustomUser.Role.FARMER:
+                Farmer.objects.create(
+                    user=obj,
+                    company=company
+                )
 
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ('id', 'company_name', 'user')
