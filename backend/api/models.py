@@ -65,7 +65,9 @@ class Field(models.Model):
     def __str__(self):
         return self.field_name
     
-
+    class Meta:
+        managed = False
+        db_table = 'field'
 
 class Lab(models.Model):
     lab_id = models.AutoField(primary_key=True)
@@ -75,6 +77,10 @@ class Lab(models.Model):
     def __str__(self):
         return self.lab_name
     
+    class Meta:
+        managed = False
+        db_table = 'lab'
+
 class Crop(models.Model):
     crop_id = models.AutoField(primary_key=True)
     crop_name = models.CharField(max_length=255)
@@ -83,6 +89,10 @@ class Crop(models.Model):
     def __str__(self):
         return self.crop_name
     
+    class Meta:
+        managed = False
+        db_table = 'crop'
+
 class FieldHistory(models.Model):
     field_hist_id = models.AutoField(primary_key=True)
     field = models.ForeignKey('Field', on_delete=models.CASCADE)
@@ -94,7 +104,9 @@ class FieldHistory(models.Model):
     def __str__(self):
         return f"Field History {self.field_hist_id}"
 
-
+    class Meta:
+        managed = False
+        db_table = 'field_history'
 
 class SoilTest(models.Model):
     soil_id = models.AutoField(primary_key=True)
@@ -142,6 +154,10 @@ class SoilTest(models.Model):
     def __str__(self):
         return f"Soil Test {self.soil_id}"
     
+    class Meta:
+        managed = False
+        db_table = 'soil_test'
+
 class Report(models.Model):
     CATEGORY_CHOICES = [
         ('fertilizer_application', 'Fertilizer Application'),
@@ -181,4 +197,8 @@ class Yield(models.Model):
 
     def __str__(self):
         return f"Yield for {self.farmer} on {self.date}: {self.yield_number}"
+
+    class Meta:
+        managed = False
+        db_table = 'yield'
 
