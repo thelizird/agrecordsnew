@@ -93,32 +93,112 @@ class FarmerViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Get the logged-in user
         user = self.request.user
 
-        # Return all farmers associated with the logged-in user
-        return Farmer.objects.filter(user=user)
+        # Only allow companies and agronomists to view farmers
+        if user.role == CustomUser.Role.COMPANY:
+            # Get all farmers associated with this company
+            return Farmer.objects.filter(company__user=user)
+        elif user.role == CustomUser.Role.AGRONOMIST:
+            # Get all farmers associated with the agronomist's company
+            try:
+                agronomist = Agronomist.objects.get(user=user)
+                return Farmer.objects.filter(company=agronomist.company)
+            except Agronomist.DoesNotExist:
+                return Farmer.objects.none()
+        else:
+            # For farmers, return an empty queryset or just their own record
+            return Farmer.objects.filter(user=user)
+
+    def create(self, request, *args, **kwargs):
+        # Only allow companies to create farmers
+        if request.user.role != CustomUser.Role.COMPANY:
+            return Response(
+                {"error": "Only companies can create farmers"}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().create(request, *args, **kwargs)
 
 class FieldViewSet(viewsets.ModelViewSet):
     serializer_class = FieldSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Get the logged-in user
         user = self.request.user
-
-        # Filter the queryset by the 'farmer' query parameter, if provided
         farmer_id = self.request.query_params.get('farmer', None)
 
-        # Get the farmers associated with the logged-in user
-        farmers = Farmer.objects.filter(user=user)
+        # Company users can see all fields from their farmers
+        if user.role == CustomUser.Role.COMPANY:
+            if farmer_id:
+                return Field.objects.filter(
+                    farmer__company__user=user,
+                    farmer_id=farmer_id
+                )
+            return Field.objects.filter(farmer__company__user=user)
 
-        # If the farmer_id is provided, filter fields for that specific farmer
-        if farmer_id:
-            return Field.objects.filter(farmer__in=farmers, farmer_id=farmer_id)
+        # Agronomists can see fields from farmers in their company
+        elif user.role == CustomUser.Role.AGRONOMIST:
+            try:
+                agronomist = Agronomist.objects.get(user=user)
+                if farmer_id:
+                    return Field.objects.filter(
+                        farmer__company=agronomist.company,
+                        farmer_id=farmer_id
+                    )
+                return Field.objects.filter(farmer__company=agronomist.company)
+            except Agronomist.DoesNotExist:
+                return Field.objects.none()
 
-        # Otherwise, return fields for all the user's farmers
-        return Field.objects.filter(farmer__in=farmers)
+        # Farmers can only see their own fields
+        elif user.role == CustomUser.Role.FARMER:
+            try:
+                farmer = Farmer.objects.get(user=user)
+                return Field.objects.filter(farmer=farmer)
+            except Farmer.DoesNotExist:
+                return Field.objects.none()
+
+        return Field.objects.none()
+
+    def create(self, request, *args, **kwargs):
+        user = self.request.user
+        
+        # Validate that the farmer_id in the request belongs to the correct company/agronomist
+        farmer_id = request.data.get('farmer')
+        
+        if user.role == CustomUser.Role.COMPANY:
+            if not Farmer.objects.filter(id=farmer_id, company__user=user).exists():
+                return Response(
+                    {"error": "You can only create fields for farmers in your company"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        elif user.role == CustomUser.Role.AGRONOMIST:
+            try:
+                agronomist = Agronomist.objects.get(user=user)
+                if not Farmer.objects.filter(id=farmer_id, company=agronomist.company).exists():
+                    return Response(
+                        {"error": "You can only create fields for farmers in your company"}, 
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            except Agronomist.DoesNotExist:
+                return Response(
+                    {"error": "Agronomist profile not found"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        elif user.role == CustomUser.Role.FARMER:
+            try:
+                farmer = Farmer.objects.get(user=user)
+                if str(farmer.id) != str(farmer_id):
+                    return Response(
+                        {"error": "You can only create fields for yourself"}, 
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            except Farmer.DoesNotExist:
+                return Response(
+                    {"error": "Farmer profile not found"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        return super().create(request, *args, **kwargs)
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()

@@ -12,40 +12,34 @@ function Clients() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClient, setSelectedClient] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const [companyId, setCompanyId] = useState(null);
 
-  // Fetch company ID when component mounts
+  // Fetch user info when component mounts
   useEffect(() => {
-    const fetchCompanyId = async () => {
+    const fetchUserInfo = async () => {
       try {
         const response = await api.get("/api/user/me/");
-        console.log("User data response:", response.data); // Debug log
-        const companyId = response.data.company;
-        
-        if (!companyId) {
-          console.error("No company ID available for this user");
-          return;
-        }
-        
-        console.log("Setting company ID:", companyId); // Debug log
-        setCompanyId(companyId);
+        console.log("User data response:", response.data);
+        setUserRole(response.data.role);
+        setCompanyId(response.data.company);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
       }
     };
-    fetchCompanyId();
+    fetchUserInfo();
   }, []);
 
-  // Add this debug log
-  useEffect(() => {
-    console.log("Current companyId state:", companyId);
-  }, [companyId]);
-
-  // Fetch clients (farmers) from the API
-  const fetchClients = () => {
-    api.get("/api/farmers/")
-      .then((res) => setClients(res.data))
-      .catch((err) => alert("Failed to fetch clients."));
+  // Fetch farmers from the API
+  const fetchClients = async () => {
+    try {
+      const response = await api.get("/api/farmers/");
+      console.log("Farmers data:", response.data);
+      setClients(response.data);
+    } catch (error) {
+      console.error("Failed to fetch farmers:", error);
+      alert("Failed to fetch farmers.");
+    }
   };
 
   useEffect(() => {
@@ -55,6 +49,9 @@ function Clients() {
   const handleClientClick = (client) => {
     setSelectedClient(client);
   };
+
+  // Only show "Add Farmers" button for company users
+  const showAddButton = userRole === 'COMPANY';
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -67,14 +64,16 @@ function Clients() {
         />
 
         <div className="w-3/4 flex flex-col">
-          <div className="p-5">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="mb-4 bg-brown-800 text-white px-4 py-2 rounded hover:bg-brown-600 transition"
-            >
-              Add Farmers
-            </button>
-          </div>
+          {showAddButton && (
+            <div className="p-5">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="mb-4 bg-brown-800 text-white px-4 py-2 rounded hover:bg-brown-600 transition"
+              >
+                Add Farmers
+              </button>
+            </div>
+          )}
           <ClientList 
             clients={clients} 
             searchQuery={searchQuery} 

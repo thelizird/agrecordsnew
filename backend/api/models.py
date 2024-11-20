@@ -32,6 +32,9 @@ class Company(models.Model):
     def __str__(self):
         return self.company_name
 
+    class Meta:
+        db_table = 'company'
+
 class Agronomist(models.Model):
     user = models.OneToOneField('CustomUser', on_delete=models.CASCADE)
     company = models.ForeignKey('Company', on_delete=models.CASCADE)
@@ -40,6 +43,9 @@ class Agronomist(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+    
+    class Meta:
+        db_table = 'agronomist'
 
 # Modified Farmer model
 class Farmer(models.Model):
@@ -49,6 +55,9 @@ class Farmer(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        db_table = 'farmer'
 
 class Field(models.Model):
     field_id = models.AutoField(primary_key=True)
@@ -179,6 +188,8 @@ class Report(models.Model):
     year = models.PositiveIntegerField(default=timezone.now().year)
 
     class Meta:
+        managed = False
+        db_table = 'report'
         unique_together = ('category', 'year')
 
     def __str__(self):

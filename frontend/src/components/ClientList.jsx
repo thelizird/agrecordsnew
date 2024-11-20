@@ -20,18 +20,16 @@ function ClientList({ clients, searchQuery, setSearchQuery, onClientClick }) {
           <ul className="space-y-4">
             {clients
               .filter(client =>
-                // Adjust search to filter by full name
-                (`${client.farmer_fname} ${client.farmer_lname}`).toLowerCase().includes(searchQuery.toLowerCase())
+                client.name.toLowerCase().includes(searchQuery.toLowerCase())
               )
               .map(client => (
                 <li 
                   key={client.id} 
                   className="bg-white p-4 rounded-lg border-2 border-black mx-auto max-w-[600px] w-full cursor-pointer"
-                  onClick={() => onClientClick(client)} // Handle client click
+                  onClick={() => onClientClick(client)}
                 >
-                  {/* Concatenate farmer_fname and farmer_lname to display full name */}
                   <h3 className="text-xl font-semibold">
-                    {client.farmer_fname} {client.farmer_lname}
+                    {client.name}
                   </h3>
                 </li>
               ))}
