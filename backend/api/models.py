@@ -43,13 +43,12 @@ class Agronomist(models.Model):
 
 # Modified Farmer model
 class Farmer(models.Model):
-    user = models.OneToOneField('CustomUser', on_delete=models.CASCADE)  # Changed from ForeignKey to OneToOneField
+    user = models.OneToOneField('CustomUser', on_delete=models.CASCADE)
     company = models.ForeignKey('Company', on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=255)  # Renamed from farmer_fname
-    last_name = models.CharField(max_length=255)   # Renamed from farmer_lname
+    name = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return self.name
 
 class Field(models.Model):
     field_id = models.AutoField(primary_key=True)

@@ -4,8 +4,7 @@ import api from "../api";
 function UserFormModal({ isOpen, onClose, onSuccess, companyId }) {
   console.log("UserFormModal received companyId:", companyId);
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,8 +35,7 @@ function UserFormModal({ isOpen, onClose, onSuccess, companyId }) {
       password: password,
       role: "FARMER",
       company: companyId,
-      first_name: firstName,
-      last_name: lastName
+      name: name
     };
 
     console.log("Submitting form data:", formData);
@@ -49,8 +47,7 @@ function UserFormModal({ isOpen, onClose, onSuccess, companyId }) {
       onSuccess();
       onClose();
       
-      setFirstName('');
-      setLastName('');
+      setName('');
       setUsername('');
       setEmail('');
       setPassword('');
@@ -71,21 +68,11 @@ function UserFormModal({ isOpen, onClose, onSuccess, companyId }) {
         <h2 className="text-xl font-bold mb-4">Add New Farmer</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-700">First Name</label>
+            <label className="block text-gray-700">Name</label>
             <input
               type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-              className="w-full mt-1 p-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700">Last Name</label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
               className="w-full mt-1 p-2 border rounded"
             />

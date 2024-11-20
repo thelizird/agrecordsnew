@@ -97,8 +97,8 @@ class AgronomistAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class FarmerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'company', 'user')
-    fields = ('id', 'user', 'company', 'first_name', 'last_name')
+    list_display = ('id', 'name', 'company', 'user')
+    fields = ('id', 'user', 'company', 'name')
     readonly_fields = ('id',)
     
     def formfield_for_foreignkey(self, db_field, request, **kwargs):

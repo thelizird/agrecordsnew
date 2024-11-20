@@ -346,8 +346,8 @@ def create_farmer_user(request):
     print("Creating farmer user")
     print("Request data:", request.data)
     
-    # Validate required fields
-    required_fields = ['username', 'email', 'password', 'company', 'first_name', 'last_name']
+    # Update required fields to use 'name' instead of 'first_name' and 'last_name'
+    required_fields = ['username', 'email', 'password', 'company', 'name']
     missing_fields = [field for field in required_fields if not request.data.get(field)]
     
     if missing_fields:
@@ -375,12 +375,11 @@ def create_farmer_user(request):
             if user_serializer.is_valid():
                 user = user_serializer.save()
                 
-                # Then create the farmer profile
+                # Update farmer data to use single 'name' field
                 farmer_data = {
                     'user': user.id,
                     'company': request.data.get('company'),
-                    'first_name': request.data.get('first_name'),
-                    'last_name': request.data.get('last_name')
+                    'name': request.data.get('name')
                 }
                 print("Farmer data:", farmer_data)
                 

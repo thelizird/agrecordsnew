@@ -1,6 +1,6 @@
 // ClientFormModal.jsx
 function ClientFormModal({
-    farmer_fname, setFarmerFname, farmer_lname, setFarmerLname, handleSubmit, toggleModal, loading, error
+    name, setName, handleSubmit, toggleModal, loading, error
 }) {
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -8,21 +8,11 @@ function ClientFormModal({
                 <h2 className="text-xl font-bold mb-4">Add a New Client</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-gray-700">First Name</label>
+                        <label className="block text-gray-700">Name</label>
                         <input
                             type="text"
-                            value={farmer_fname}
-                            onChange={(e) => setFarmerFname(e.target.value)}
-                            required
-                            className="w-full mt-1 p-2 border rounded"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700">Last Name</label>
-                        <input
-                            type="text"
-                            value={farmer_lname}
-                            onChange={(e) => setFarmerLname(e.target.value)}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             required
                             className="w-full mt-1 p-2 border rounded"
                         />
