@@ -92,7 +92,6 @@ class Lab(models.Model):
 class Crop(models.Model):
     crop_id = models.AutoField(primary_key=True)
     crop_name = models.CharField(max_length=255)
-    farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE)  # Connect to Farmer model
 
     def __str__(self):
         return self.crop_name
@@ -101,13 +100,37 @@ class Crop(models.Model):
         managed = False
         db_table = 'crop'
 
+class YieldUnit(models.Model):
+    yield_unit_id = models.AutoField(primary_key=True)
+    yield_unit = models.CharField(max_length=50)  # e.g., 'bushels', 'tons', etc.
+
+    def __str__(self):
+        return self.yield_unit
+
+    class Meta:
+        managed = False
+        db_table = 'yield_unit'
+
+class PriceHistory(models.Model):
+    price_history_id = models.AutoField(primary_key=True)
+    yield_unit = models.ForeignKey('YieldUnit', on_delete=models.CASCADE)
+    date = models.DateField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Price: ${self.price} per {self.yield_unit} on {self.date}"
+
+    class Meta:
+        managed = False
+        db_table = 'price_history'
+
 class FieldHistory(models.Model):
     field_hist_id = models.AutoField(primary_key=True)
-    field = models.ForeignKey('Field', on_delete=models.CASCADE)
-    crop = models.ForeignKey('Crop', on_delete=models.CASCADE)
-    plant_date = models.DateField()
-    harvest_date = models.DateField()
+    field_id = models.ForeignKey('Field', on_delete=models.CASCADE)
+    crop_id = models.ForeignKey('Crop', on_delete=models.CASCADE)
     yield_amount = models.FloatField()
+    yield_unit_id = models.ForeignKey('YieldUnit', on_delete=models.CASCADE)
+    test_date = models.DateField()
 
     def __str__(self):
         return f"Field History {self.field_hist_id}"
@@ -121,7 +144,6 @@ class SoilTest(models.Model):
     test_date = models.DateField()
     lab = models.ForeignKey('Lab', on_delete=models.CASCADE)
     field = models.ForeignKey('Field', on_delete=models.CASCADE)
-    crop = models.ForeignKey('Crop', on_delete=models.CASCADE)
     ph = models.FloatField()
     salts = models.FloatField()
     chlorides = models.FloatField()
@@ -141,7 +163,7 @@ class SoilTest(models.Model):
     magnesium_meq_per_100g = models.FloatField()
     sulfate = models.FloatField()
     zinc = models.FloatField()
-    iron = models.FloatField()
+    iron = models.FloatField() 
     manganese = models.FloatField()
     copper = models.FloatField()
     boron = models.FloatField()
@@ -150,7 +172,7 @@ class SoilTest(models.Model):
     recom_potash = models.FloatField()
     recom_calcium = models.FloatField()
     recom_magnesium = models.FloatField()
-    recom_sulphur = models.FloatField()
+    recom_sulfur = models.FloatField()
     recom_zinc = models.FloatField()
     recom_iron = models.FloatField()
     recom_manganese = models.FloatField()

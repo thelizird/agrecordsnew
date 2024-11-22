@@ -51,12 +51,12 @@ class SoilTestSerializer(serializers.ModelSerializer):
     class Meta:
         model = SoilTest
         fields = [
-            'soil_id', 'test_date', 'lab', 'field', 'crop', 'ph', 'salts', 'chlorides', 'sodium', 'cec', 
+            'soil_id', 'test_date', 'lab', 'field', 'ph', 'salts', 'chlorides', 'sodium', 'cec', 
             'excess_lime', 'organic_matter', 'organic_n', 'ammonium_n', 'nitrate_n', 'phosphorus', 
             'potassium_ppm', 'potassium_meq_per_100g', 'calcium_ppm', 'calcium_meq_per_100g', 
             'magnesium_ppm', 'magnesium_meq_per_100g', 'sulfate', 'zinc', 'iron', 'manganese', 
             'copper', 'boron', 'recom_nitrogen', 'recom_phos', 'recom_potash', 'recom_calcium', 
-            'recom_magnesium', 'recom_sulphur', 'recom_zinc', 'recom_iron', 'recom_manganese', 
+            'recom_magnesium', 'recom_sulfur', 'recom_zinc', 'recom_iron', 'recom_manganese', 
             'recom_copper', 'recom_boron', 'recom_gypsum', 'recom_lime'
         ]
 

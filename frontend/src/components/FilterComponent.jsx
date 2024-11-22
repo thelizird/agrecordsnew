@@ -22,7 +22,7 @@ function FilterComponent({ onGenerateGraph }) {
         "potassium_meq_per_100g", "calcium_ppm", "calcium_meq_per_100g",
         "magnesium_ppm", "magnesium_meq_per_100g", "sulfate", "zinc", "iron",
         "manganese", "copper", "boron", "recom_nitrogen", "recom_phos",
-        "recom_potash", "recom_calcium", "recom_magnesium", "recom_sulphur",
+        "recom_potash", "recom_calcium", "recom_magnesium", "recom_sulfur",
         "recom_zinc", "recom_iron", "recom_manganese", "recom_copper", "recom_boron",
         "recom_gypsum", "recom_lime"
     ];
@@ -102,7 +102,7 @@ function FilterComponent({ onGenerateGraph }) {
                 <option value="">Select a farmer</option>
                 {farmers.map((farmer) => (
                     <option key={farmer.id} value={farmer.id}>
-                        {farmer.farmer_fname} {farmer.farmer_lname}
+                        {farmer.name}
                     </option>
                 ))}
             </select>

@@ -268,37 +268,55 @@ class SoilTestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Get the logged-in user
         user = self.request.user
         
-        # Get the farmers that belong to the user
-        farmers = Farmer.objects.filter(user=user)
-        
-        # Get the fields that belong to those farmers
-        fields = Field.objects.filter(farmer__in=farmers)
-        
-        # Start with the base queryset
-        queryset = SoilTest.objects.filter(field__in=fields)
-        
-        # Apply additional filtering if present in request parameters
-        field = self.request.query_params.get('field', None)
-        crop = self.request.query_params.get('crop', None)
-        start_date = self.request.query_params.get('startDate', None)
-        end_date = self.request.query_params.get('endDate', None)
-        
-        if field:
-            # Split the field parameter into a list and use __in to match any of the IDs
-            queryset = queryset.filter(field__in=field.split(','))
-        
-        if crop:
-            # Similar handling for crop if crop filtering is used
-            queryset = queryset.filter(crop__in=crop.split(','))
+        # Initialize base queryset based on user role
+        if user.role == CustomUser.Role.COMPANY:
+            # Company users can see all soil tests from their farmers
+            queryset = SoilTest.objects.filter(field__farmer__company__user=user)
+        elif user.role == CustomUser.Role.AGRONOMIST:
+            # Agronomists can see soil tests from farmers in their company
+            try:
+                agronomist = Agronomist.objects.get(user=user)
+                queryset = SoilTest.objects.filter(field__farmer__company=agronomist.company)
+            except Agronomist.DoesNotExist:
+                return SoilTest.objects.none()
+        elif user.role == CustomUser.Role.FARMER:
+            # Farmers can only see their own soil tests
+            try:
+                farmer = Farmer.objects.get(user=user)
+                queryset = SoilTest.objects.filter(field__farmer=farmer)
+            except Farmer.DoesNotExist:
+                return SoilTest.objects.none()
+        else:
+            return SoilTest.objects.none()
 
-        if start_date and end_date:
-            # Filter by date range if both start and end dates are provided
-            queryset = queryset.filter(test_date__range=[start_date, end_date])
+        # Apply additional filters
+        farmer = self.request.query_params.get('farmer', None)
+        field = self.request.query_params.get('field', None)
+        date_after = self.request.query_params.get('date_after', None)
+        date_before = self.request.query_params.get('date_before', None)
         
-        return queryset
+        # Filter by farmer if specified and user has permission
+        if farmer:
+            if user.role == CustomUser.Role.FARMER:
+                # Farmers can only see their own data, so ignore the farmer filter
+                pass
+            else:
+                queryset = queryset.filter(field__farmer_id=farmer)
+        
+        # Apply remaining filters
+        if field:
+            field_ids = field.split(',')
+            queryset = queryset.filter(field_id__in=field_ids)
+            
+        if date_after:
+            queryset = queryset.filter(test_date__gte=date_after)
+            
+        if date_before:
+            queryset = queryset.filter(test_date__lte=date_before)
+        
+        return queryset.order_by('test_date')
 
 class ReportView(APIView):
     permission_classes = [IsAuthenticated]
@@ -325,27 +343,47 @@ class YieldViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Get the logged-in user
         user = self.request.user
         
-        # Get the farmers that belong to the user
-        user_farmers = Farmer.objects.filter(user=user)
-        
-        # Start with base queryset filtered by user's farmers
-        queryset = Yield.objects.filter(farmer__in=user_farmers)
-        
-        # Get filter parameters
+        # Initialize base queryset
+        if user.role == CustomUser.Role.COMPANY:
+            # Company users can see all yields from their farmers
+            queryset = Yield.objects.filter(farmer__company__user=user)
+        elif user.role == CustomUser.Role.AGRONOMIST:
+            # Agronomists can see yields from farmers in their company
+            try:
+                agronomist = Agronomist.objects.get(user=user)
+                queryset = Yield.objects.filter(farmer__company=agronomist.company)
+            except Agronomist.DoesNotExist:
+                return Yield.objects.none()
+        elif user.role == CustomUser.Role.FARMER:
+            # Farmers can only see their own yields
+            try:
+                farmer = Farmer.objects.get(user=user)
+                queryset = Yield.objects.filter(farmer=farmer)
+            except Farmer.DoesNotExist:
+                return Yield.objects.none()
+        else:
+            return Yield.objects.none()
+
+        # Apply additional filters
         farmer = self.request.query_params.get('farmer', None)
         field = self.request.query_params.get('field', None)
         date_after = self.request.query_params.get('date_after', None)
         date_before = self.request.query_params.get('date_before', None)
         
-        # Apply filters if they exist
+        # Filter by farmer if specified and user has permission
         if farmer:
-            queryset = queryset.filter(farmer_id=farmer)
+            if user.role == CustomUser.Role.FARMER:
+                # Farmers can only see their own data, so ignore the farmer filter
+                pass
+            else:
+                queryset = queryset.filter(farmer_id=farmer)
         
+        # Apply remaining filters
         if field:
-            queryset = queryset.filter(field_id=field)
+            field_ids = field.split(',')
+            queryset = queryset.filter(field_id__in=field_ids)
             
         if date_after:
             queryset = queryset.filter(date__gte=date_after)
@@ -353,10 +391,32 @@ class YieldViewSet(viewsets.ModelViewSet):
         if date_before:
             queryset = queryset.filter(date__lte=date_before)
         
-        print("Yield Query Params:", self.request.query_params)
-        print("Filtered Yield Data:", queryset.values())
+        return queryset.order_by('date')
+
+    def perform_create(self, serializer):
+        # Ensure the user can only create yields for appropriate farmers
+        user = self.request.user
+        farmer_id = self.request.data.get('farmer')
         
-        return queryset
+        if user.role == CustomUser.Role.COMPANY:
+            if not Farmer.objects.filter(id=farmer_id, company__user=user).exists():
+                raise serializers.ValidationError("You can only create yields for farmers in your company")
+        elif user.role == CustomUser.Role.AGRONOMIST:
+            try:
+                agronomist = Agronomist.objects.get(user=user)
+                if not Farmer.objects.filter(id=farmer_id, company=agronomist.company).exists():
+                    raise serializers.ValidationError("You can only create yields for farmers in your company")
+            except Agronomist.DoesNotExist:
+                raise serializers.ValidationError("Agronomist profile not found")
+        elif user.role == CustomUser.Role.FARMER:
+            try:
+                farmer = Farmer.objects.get(user=user)
+                if str(farmer.id) != str(farmer_id):
+                    raise serializers.ValidationError("You can only create yields for yourself")
+            except Farmer.DoesNotExist:
+                raise serializers.ValidationError("Farmer profile not found")
+        
+        serializer.save()
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def __init__(self, *args, **kwargs):
