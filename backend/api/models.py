@@ -211,7 +211,7 @@ class Report(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'report'
+        db_table = 'api_report'
         unique_together = ('category', 'year')
 
     def __str__(self):
