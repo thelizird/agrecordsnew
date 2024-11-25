@@ -65,15 +65,19 @@ function Clients() {
 
         <div className="w-3/4 flex flex-col">
           {showAddButton && (
-            <div className="p-5">
+            // <div className="p-5">
+              <div className="flex-0 h-[10%] bg-white shadow-md my-5 mx-5 rounded-lg flex justify-center items-center">
+
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="mb-4 bg-brown-800 text-white px-4 py-2 rounded hover:bg-brown-600 transition"
+                className="text-brown-800 text-[20px] font-bold"
               >
-                Add Farmers
+                Add Farmers +
               </button>
             </div>
+            // </div>
           )}
+
           <ClientList 
             clients={clients} 
             searchQuery={searchQuery} 
