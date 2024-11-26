@@ -217,63 +217,63 @@ function LeftClientInfo({ selectedClient }) {
             {/* Field Modal */}
             {isFieldModalOpen && selectedField && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-cream-500 p-6 rounded-lg shadow-lg w-[400px]">
-                        <h2 className="text-xl font-bold mb-4 text-brown-800">Field Information</h2>
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] z-50">
+                        <h2 className="text-xl font-bold mb-4">Field Information</h2>
 
-                        <label className="block text-brown-800">Field Name</label>
+                        <label className="block text-gray-700">Field Name</label>
                         <input
                             type="text"
-                            className="w-full mb-2 p-2 border-2 border-brown-600 rounded-lg bg-cream-600 text-brown-800"
+                            className="w-full mt-1 p-2 border rounded"
                             value={selectedField.field_name}
                             onChange={(e) => setSelectedField({ ...selectedField, field_name: e.target.value })}
                         />
 
-                        <label className="block text-brown-800">State</label>
+                        <label className="block text-gray-700">State</label>
                         <input
                             type="text"
-                            className="w-full mb-2 p-2 border-2 border-brown-600 rounded-lg bg-cream-600 text-brown-800"
+                            className="w-full mt-1 p-2 border rounded"
                             value={selectedField.state}
                             onChange={(e) => setSelectedField({ ...selectedField, state: e.target.value })}
                         />
 
-                        <label className="block text-brown-800">City</label>
+                        <label className="block text-gray-700">City</label>
                         <input
                             type="text"
-                            className="w-full mb-2 p-2 border-2 border-brown-600 rounded-lg bg-cream-600 text-brown-800"
+                            className="w-full mt-1 p-2 border rounded"
                             value={selectedField.city}
                             onChange={(e) => setSelectedField({ ...selectedField, city: e.target.value })}
                         />
 
-                        <label className="block text-brown-800">Address</label>
+                        <label className="block text-gray-700">Address</label>
                         <input
                             type="text"
-                            className="w-full mb-2 p-2 border-2 border-brown-600 rounded-lg bg-cream-600 text-brown-800"
+                            className="w-full mt-1 p-2 border rounded"
                             value={selectedField.address}
                             onChange={(e) => setSelectedField({ ...selectedField, address: e.target.value })}
                         />
 
-                        <label className="block text-brown-800">Zip Code</label>
+                        <label className="block text-gray-700">Zip Code</label>
                         <input
                             type="text"
-                            className="w-full mb-2 p-2 border-2 border-brown-600 rounded-lg bg-cream-600 text-brown-800"
+                            className="w-full mt-1 p-2 border rounded"
                             value={selectedField.zip}
                             onChange={(e) => setSelectedField({ ...selectedField, zip: e.target.value })}
                         />
 
-                        <label className="block text-brown-800">Latitude</label>
+                        <label className="block text-gray-700">Latitude</label>
                         <input
                             type="number"
                             step="0.0000001"
-                            className="w-full mb-2 p-2 border-2 border-brown-600 rounded-lg bg-cream-600 text-brown-800"
+                            className="w-full mt-1 p-2 border rounded"
                             value={selectedField.latitude}
                             onChange={(e) => setSelectedField({ ...selectedField, latitude: e.target.value })}
                         />
 
-                        <label className="block text-brown-800">Longitude</label>
+                        <label className="block text-gray-700">Longitude</label>
                         <input
                             type="number"
                             step="0.0000001"
-                            className="w-full mb-2 p-2 border-2 border-brown-600 rounded-lg bg-cream-600 text-brown-800"
+                            className="w-full mt-1 p-2 border rounded mb-4"
                             value={selectedField.longitude}
                             onChange={(e) => setSelectedField({ ...selectedField, longitude: e.target.value })}
                         />
@@ -281,7 +281,7 @@ function LeftClientInfo({ selectedClient }) {
                         <div className="flex justify-between space-x-2">
                             <button
                                 onClick={handleUpdateField}
-                                className="bg-brown-800 text-white py-2 px-4 rounded hover:bg-brown-600 transition"
+                                className="px-4 py-2 bg-brown-800 text-white rounded hover:bg-brown-700 transition disabled:opacity-50"
                             >
                                 Update Field
                             </button>
@@ -293,7 +293,7 @@ function LeftClientInfo({ selectedClient }) {
                             </button>
                             <button
                                 onClick={closeFieldModal}
-                                className="bg-brown-600 text-white py-2 px-4 rounded hover:bg-brown-800 transition"
+                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition"
                             >
                                 Cancel
                             </button>
