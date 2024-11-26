@@ -223,7 +223,7 @@ function LeftClientInfo({ selectedClient }) {
                         <label className="block text-gray-700">Field Name</label>
                         <input
                             type="text"
-                            className="w-full mt-1 p-2 border rounded"
+                            className="w-full mt-1 p-2 border rounded mb-2"
                             value={selectedField.field_name}
                             onChange={(e) => setSelectedField({ ...selectedField, field_name: e.target.value })}
                         />
@@ -231,7 +231,7 @@ function LeftClientInfo({ selectedClient }) {
                         <label className="block text-gray-700">State</label>
                         <input
                             type="text"
-                            className="w-full mt-1 p-2 border rounded"
+                            className="w-full mt-1 p-2 border rounded mb-2"
                             value={selectedField.state}
                             onChange={(e) => setSelectedField({ ...selectedField, state: e.target.value })}
                         />
@@ -239,7 +239,7 @@ function LeftClientInfo({ selectedClient }) {
                         <label className="block text-gray-700">City</label>
                         <input
                             type="text"
-                            className="w-full mt-1 p-2 border rounded"
+                            className="w-full mt-1 p-2 border rounded mb-2"
                             value={selectedField.city}
                             onChange={(e) => setSelectedField({ ...selectedField, city: e.target.value })}
                         />
@@ -247,7 +247,7 @@ function LeftClientInfo({ selectedClient }) {
                         <label className="block text-gray-700">Address</label>
                         <input
                             type="text"
-                            className="w-full mt-1 p-2 border rounded"
+                            className="w-full mt-1 p-2 border rounded mb-2"
                             value={selectedField.address}
                             onChange={(e) => setSelectedField({ ...selectedField, address: e.target.value })}
                         />
@@ -255,7 +255,7 @@ function LeftClientInfo({ selectedClient }) {
                         <label className="block text-gray-700">Zip Code</label>
                         <input
                             type="text"
-                            className="w-full mt-1 p-2 border rounded"
+                            className="w-full mt-1 p-2 border rounded mb-2"
                             value={selectedField.zip}
                             onChange={(e) => setSelectedField({ ...selectedField, zip: e.target.value })}
                         />
@@ -264,7 +264,7 @@ function LeftClientInfo({ selectedClient }) {
                         <input
                             type="number"
                             step="0.0000001"
-                            className="w-full mt-1 p-2 border rounded"
+                            className="w-full mt-1 p-2 border rounded mb-2"
                             value={selectedField.latitude}
                             onChange={(e) => setSelectedField({ ...selectedField, latitude: e.target.value })}
                         />
